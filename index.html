@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Shooter</title>
+        <style>
+            html,body, #renderCanvas { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #111; }
+            #hud {position: fixed; left: 0; top: 0; right: 0; bottom: 0; pointer-events: none; font-family: sans-serif; z-index: 40; }
+            #crosshair {position: absolute; left: calc(50% - 10px); top: calc(50% - 10px); width: 20px; height: 20px; pointer-events: none; }
+            #startScreen { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); z-index: 20; }
+            .btn {background: #2b2; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        </style>
+    </head>
+    <body>
+        <div id="startScreen">
+            <div>
+                <h1 style="color: white;">3D Shooter</h1>
+                <div class="btn" id="playBtn">Play</div>
+            </div>
+        </div>
+        <canvas id="renderCanvas"></canvas>
+    <img id="crosshair" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><rectnx='14' y='6' width'4' height='20' fill='%2300ff66' opacity='0.95' /><rect x='6' y='14' width='20' height='4' fill='%2300ff66' opacity='0.95' /></svg>" style="filter: drop-shadow(0 0 6px rgba(0,255,102,0.9));" />
+        <div id="hud">
+    <div id="kills" style="position: absolute; left: 10px; top: 10px; color: white;">Kills: 0</div>
+    <div style="position: absolute; right: 10px; top: 10px;">
+        <button id="themeBtn" class="btn" style="background: #4499ff;">Theme</button>
+    </div>
+    <div id="sprintHint" style="position: absolute; left:50%; bottom: 40px; transform:translateX(-50%); color: #00ff88; background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 6px; display: none; font-family: sans-serif; font-size: 14px; z-index: 25; box-shadow: 0 0 12px rgba(0, 255, 136, 0.35);">Right Click to slide</div>
+    <div id="scopeOverlay" style="position: fixed; left: 0; top: 0; bottom: 0; pointer-events: none; display:none; z-index: 90;">
+        <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4);"></div>
+        <div style="position: absolute; left:50%; top:50%; transform:translate(-50%, -50%); width: 60vmin; height: 60vmin; border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6) inset; border: 2px solid rgba(200,200,200,0.85);"> 
+    </div>
+    <div id="hpContainer" style="position: fixed; left: 14px; bottom: 18px; width: 260px; height: 26px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255, 0.08); pointer-events: none; z-index:45; display: flex; align-items: center;">
+        <div id="hpFill" style="width: 100%; height: 100%; background: linear-gradient(90deg, #b22222, #ff4444); transition: width 160ms linear; position: absolute; left: 0; top: 0; border-radius: 4px;"></div>
+        <div id="hpText" style="position: relative; z-index: 46; color: white; font-weight: 700; padding-left: 10px; font-size: 13px;">HP: 100</div>
+    </div>
+        </div>
+        <script type="module" src="/main.js"></script>
+    </body>
+</html>
