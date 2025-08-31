@@ -154,58 +154,44 @@ const trafficLights = [];
 function createCityRoadSystem(){
     const roadWidth = 8;
     const arterialWidth = 18;
-    const blockSize = 96;
-    const blocksPerSide = 10;
+    const blockSize = 160; // Increased from 96 to reduce road density
+    const blocksPerSide = 6; // Reduced from 10 to have fewer blocks
     const usableSpan = blockSize * blocksPerSide;
     const halfSpan = usableSpan / 2;
 
+    // Main arterial roads - keep these
     createRoad(0, 0, MAP_SIZE, arterialWidth, 0);
     createRoad(0, 0, arterialWidth, MAP_SIZE, Math.PI/2);
+    
+    // Reduce secondary arterials
     const minorOffset = Math.floor(blockSize * 2.5);
-    createRoad(0, minorOffset, MAP_SIZE * 0.95, arterialWidth, 0);
-    createRoad(0, -minorOffset, MAP_SIZE * 0.95, arterialWidth, 0);
-    createRoad(minorOffset, 0, arterialWidth, MAP_SIZE * 0.95, Math.PI/2);
-    createRoad(-minorOffset, 0, arterialWidth, MAP_SIZE * 0.95, Math.PI/2);
+    createRoad(0, minorOffset, MAP_SIZE * 0.7, arterialWidth, 0); // Reduced coverage
+    createRoad(0, -minorOffset, MAP_SIZE * 0.7, arterialWidth, 0);
+    createRoad(minorOffset, 0, arterialWidth, MAP_SIZE * 0.7, Math.PI/2);
+    createRoad(-minorOffset, 0, arterialWidth, MAP_SIZE * 0.7, Math.PI/2);
 
+    // Greatly reduce local roads
     for(let bx = 0; bx < blocksPerSide; bx++){
         for(let bz = 0; bz < blocksPerSide; bz++){
             const cx = Math.round((bx - blocksPerSide/2 + 0.5) * blockSize);
             const cz = Math.round((bz - blocksPerSide/2 + 0.5) * blockSize);
 
-            const localCount = 1 + Math.floor(Math.random() * 3);
-            for(let l = 0; l < localCount; l++){
-                const len = Math.round(blockSize * (0.35 + Math.random() * 0.5));
-                if(Math.random() < 0.55){
-                    const xoff = Math.round((Math.random() - 0.5) * (blockSize * 0.5));
-                    createRoad(cx + xoff, cz, roadWidth, len, Math.PI/2);
-        } else {
-          const zoff = Math.round((Math.random() - 0.5) * (blockSize * 0.5));
-          createRoad(cx, cz + zoff, len, roadWidth, 0);
+            // Reduce local road density significantly
+            if(Math.random() < 0.3) { // Only 30% chance to create local roads
+                const localCount = 1; // Only 1 road per block instead of 1-3
+                for(let l = 0; l < localCount; l++){
+                    const len = Math.round(blockSize * (0.2 + Math.random() * 0.3)); // Shorter roads
+                    if(Math.random() < 0.55){
+                        const xoff = Math.round((Math.random() - 0.5) * (blockSize * 0.5));
+                        createRoad(cx + xoff, cz, roadWidth, len, Math.PI/2);
+                    } else {
+                        const zoff = Math.round((Math.random() - 0.5) * (blockSize * 0.5));
+                        createRoad(cx, cz + zoff, len, roadWidth, 0);
+                    }
+                }
+            }
         }
-      }
-
-      if(Math.random() < 0.06){
-        const ang = Math.random() * Math.PI * 2;
-        const clen = 20 + Math.random() * 36;
-        createRoad(cx + Math.cos(ang) * (blockSize*0.28), cz + Math.sin(ang) * (blockSize*0.28), roadWidth, clen, ang);
-      }
     }
-  }
-
-  const avenueCount = 6;
-  for(let a=0;a<avenueCount;a++){
-    const alongX = Math.random() < 0.5;
-    const startBlock = Math.floor(Math.random() * blocksPerSide);
-    const spanBlocks = 2 + Math.floor(Math.random() * 4);
-    const start = -Math.floor(blocksPerSide/2) * blockSize + startBlock * blockSize + Math.floor(Math.random()*blockSize*0.3);
-    if(alongX){
-      const z = Math.round((Math.random() - 0.5) * usableSpan);
-      createRoad( start + (spanBlocks*blockSize)/2, z, spanBlocks * blockSize, arterialWidth, 0 );
-    } else {
-      const x = Math.round((Math.random() - 0.5) * usableSpan);
-      createRoad( x, start + (spanBlocks*blockSize)/2, arterialWidth, spanBlocks * blockSize, Math.PI/2 );
-    }
-  }
 }
 
 function createOfficeBuilding(x, z, w, d, floors) {
@@ -283,36 +269,45 @@ function generateModernCity() {
   
   createCityRoadSystem();
 
-  for(let i = 0; i < 8; i++) {
+  // Large office towers (downtown area)
+  for(let i = 0; i < 12; i++) {
     const x = -300 + Math.random() * 200;
     const z = -300 + Math.random() * 200;
     const floors = 15 + Math.floor(Math.random() * 25);
     createOfficeBuilding(x, z, 25 + Math.random() * 15, 25 + Math.random() * 15, floors);
   }
   
-  for(let i = 0; i < 20; i++) {
+  // Medium residential/commercial buildings
+  for(let i = 0; i < 35; i++) {
     const x = 100 + Math.random() * 400;
     const z = -200 + Math.random() * 400;
     const floors = 5 + Math.floor(Math.random() * 8);
     createBuilding(x, z, 15 + Math.random() * 10, 15 + Math.random() * 10, floors * 3.2);
   }
   
+  // Shopping centers
   createShoppingMall(-450, 200);
   createShoppingMall(350, 300);
   createShoppingMall(100, -400);
+  createShoppingMall(-200, -350);
   
-  for(let i = 0; i < 12; i++) {
+  // Industrial containers
+  for(let i = 0; i < 20; i++) {
     const x = -500 + Math.random() * 200;
     const z = 200 + Math.random() * 300;
     createContainer(x, z, 20 + Math.random() * 15, 8 + Math.random() * 4);
   }
   
+  // Gas stations
   createGasStationComplex(200, 150);
   createGasStationComplex(-250, -150);
   createGasStationComplex(400, -200);
   createGasStationComplex(-180, 320);
+  createGasStationComplex(150, -350);
+  createGasStationComplex(-400, -100);
   
-  for(let i = 0; i < 30; i++) {
+  // Dense urban sprawl - more buildings everywhere
+  for(let i = 0; i < 60; i++) {
     const x = (Math.random() - 0.5) * (MAP_SIZE * 0.8);
     const z = (Math.random() - 0.5) * (MAP_SIZE * 0.8);
     
@@ -321,35 +316,109 @@ function generateModernCity() {
     if(Math.abs(z % (MAP_SIZE / 6)) < 20) continue;
     
     const buildingType = Math.random();
-    if(buildingType < 0.4) {
+    if(buildingType < 0.3) {
       const floors = 8 + Math.floor(Math.random() * 12);
       createOfficeBuilding(x, z, 20 + Math.random() * 10, 20 + Math.random() * 10, floors);
     } else if(buildingType < 0.7) {
       const floors = 3 + Math.floor(Math.random() * 6);
       createBuilding(x, z, 12 + Math.random() * 8, 12 + Math.random() * 8, floors * 3.5);
     } else {
+      // Small residential buildings
       createBuilding(x, z, 25 + Math.random() * 15, 15 + Math.random() * 10, 4 + Math.random() * 2);
     }
   }
+  
+  // Add more skyscrapers scattered around
+  for(let i = 0; i < 8; i++) {
+    const x = (Math.random() - 0.5) * (MAP_SIZE * 0.6);
+    const z = (Math.random() - 0.5) * (MAP_SIZE * 0.6);
+    if(Math.abs(x) < 50 && Math.abs(z) < 50) continue; // Avoid center
+    const floors = 20 + Math.floor(Math.random() * 20);
+    createOfficeBuilding(x, z, 30 + Math.random() * 20, 30 + Math.random() * 20, floors);
+  }
+  
+  // Add apartment complexes
+  for(let i = 0; i < 15; i++) {
+    const x = (Math.random() - 0.5) * (MAP_SIZE * 0.7);
+    const z = (Math.random() - 0.5) * (MAP_SIZE * 0.7);
+    if(Math.abs(x) < 30 && Math.abs(z) < 30) continue;
+    createBuilding(x, z, 40 + Math.random() * 20, 20 + Math.random() * 15, 6 + Math.random() * 4);
+  }
 }
 
-function spawnCityBots(count = 15) {
+function spawnCityBots(count = 50) {
   for(let i = 0; i < count; i++) {
     const x = (Math.random() - 0.5) * (MAP_SIZE * 0.9);
     const z = (Math.random() - 0.5) * (MAP_SIZE * 0.9);
     const y = 2;
     
-    const bot = MeshBuilder.CreateBox(uniqueName('bot'), {width: 1.2, height: 2.0, depth: 0.8}, scene);
-    bot.position = new Vector3(x, y, z);
+    // Create a more human-like bot with separate body parts
+    const botRoot = new TransformNode(uniqueName('botRoot'), scene);
+    botRoot.position = new Vector3(x, y, z);
+    
+    // Body (torso)
+    const torso = MeshBuilder.CreateBox(uniqueName('bot_torso'), {width: 0.8, height: 1.2, depth: 0.4}, scene);
+    torso.parent = botRoot;
+    torso.position = new Vector3(0, 0.6, 0);
+    
+    // Head
+    const head = MeshBuilder.CreateSphere(uniqueName('bot_head'), {diameter: 0.5, segments: 8}, scene);
+    head.parent = botRoot;
+    head.position = new Vector3(0, 1.4, 0);
+    
+    // Arms
+    const leftArm = MeshBuilder.CreateBox(uniqueName('bot_larm'), {width: 0.25, height: 0.8, depth: 0.25}, scene);
+    leftArm.parent = botRoot;
+    leftArm.position = new Vector3(-0.6, 0.8, 0);
+    
+    const rightArm = MeshBuilder.CreateBox(uniqueName('bot_rarm'), {width: 0.25, height: 0.8, depth: 0.25}, scene);
+    rightArm.parent = botRoot;
+    rightArm.position = new Vector3(0.6, 0.8, 0);
+    
+    // Legs
+    const leftLeg = MeshBuilder.CreateBox(uniqueName('bot_lleg'), {width: 0.3, height: 0.9, depth: 0.3}, scene);
+    leftLeg.parent = botRoot;
+    leftLeg.position = new Vector3(-0.2, -0.45, 0);
+    
+    const rightLeg = MeshBuilder.CreateBox(uniqueName('bot_rleg'), {width: 0.3, height: 0.9, depth: 0.3}, scene);
+    rightLeg.parent = botRoot;
+    rightLeg.position = new Vector3(0.2, -0.45, 0);
+    
+    // Add some clothing/equipment details
+    const backpack = MeshBuilder.CreateBox(uniqueName('bot_pack'), {width: 0.4, height: 0.6, depth: 0.2}, scene);
+    backpack.parent = botRoot;
+    backpack.position = new Vector3(0, 0.6, -0.25);
+    
+    const helmet = MeshBuilder.CreateSphere(uniqueName('bot_helmet'), {diameter: 0.55, segments: 8}, scene);
+    helmet.parent = botRoot;
+    helmet.position = new Vector3(0, 1.4, 0);
     
     const botMat = new StandardMaterial(uniqueName('botMat'), scene);
     botMat.diffuseColor = pickRandom(botPalette);
-    bot.material = botMat;
-    markSolid(bot);
+    
+    const gearMat = new StandardMaterial(uniqueName('gearMat'), scene);
+    gearMat.diffuseColor = new Color3(0.2, 0.3, 0.2); // Dark green for military gear
+    
+    const helmetMat = new StandardMaterial(uniqueName('helmetMat'), scene);
+    helmetMat.diffuseColor = new Color3(0.15, 0.15, 0.15); // Dark gray helmet
+    
+    // Apply materials
+    torso.material = botMat;
+    head.material = botMat;
+    leftArm.material = botMat;
+    rightArm.material = botMat;
+    leftLeg.material = botMat;
+    rightLeg.material = botMat;
+    backpack.material = gearMat;
+    helmet.material = helmetMat;
+    
+    // Mark collision parts
+    markSolid(torso);
+    markSolid(head);
     
     bots.push({
-      mesh: bot,
-      parts: [bot],
+      mesh: torso, // Main mesh for collision detection
+      parts: [torso, head, leftArm, rightArm, leftLeg, rightLeg, backpack, helmet, botRoot],
       hp: 100,
       speed: 2 + Math.random() * 3,
       direction: Math.random() * Math.PI * 2,
@@ -759,8 +828,8 @@ function generateWinterMap(){
   try{ createSpawnPointsFromRoads(); createTrafficLights(); }catch(e){}
   try{ createTrafficSigns(); }catch(e){}
   
-  try{ spawnCars(100); }catch(e){}
-  try{ spawnCityBots(25); }catch(e){}
+  try{ spawnCars(50); }catch(e){} // Reduced cars to make room for more bots
+  try{ spawnCityBots(50); }catch(e){} // Increased from 25 to 50 bots
   
   createTeleporter(-400, 400, 400, -400);
   createTeleporter(400, -400, -400, 400);
@@ -834,7 +903,7 @@ const jumpStrength = 10;
 let sprintHintEl = null;
 const DEFAULT_FOV = 0.9;
 const SPRINT_FOV = 1.05;
-const SCOPE_FOV = 0.28;
+const SCOPE_FOV = 0.18;
 const FOV_LERP_SPEED = 6.0;
 
 let isRunning = false;
@@ -883,12 +952,13 @@ const darkMetalMat = new PBRMaterial('darkMetal', scene); darkMetalMat.albedoCol
 const woodMat = new PBRMaterial('woodMat', scene); woodMat.albedoColor = new Color3(0.38,0.25,0.12); woodMat.metallic = 0.0; woodMat.roughness=0.6;
 const plasticMat = new PBRMaterial('plasticMat', scene); plasticMat.albedoColor = new Color3(0.06,0.06,0.07); plasticMat.metallic = 0.0; plasticMat.roughness=0.45;
 
-const weaponModels = { pistol:null, sniper:null, pump:null };
+const weaponModels = { pistol:null, sniper:null, pump:null, minigun:null };
 
 const weaponOffsets = {
   pistol: new Vector3(0.42, -0.32, 0.55),
   sniper: new Vector3(0.66, -0.18, 1.05),
-  pump:   new Vector3(0.50, -0.34, 0.62)
+  pump:   new Vector3(0.50, -0.34, 0.62),
+  minigun: new Vector3(0.35, -0.25, 0.80)
 };
 
 function createWeaponModels(){
@@ -908,6 +978,11 @@ function createWeaponModels(){
   sightR.parent = pRoot; sightR.position = new Vector3(0.06,0.075,0.02); sightR.material = darkMetalMat;
   const sightF = MeshBuilder.CreateBox('pistol_sightF',{width:0.02, height:0.02, depth:0.02}, scene);
   sightF.parent = pRoot; sightF.position = new Vector3(0.38,0.06,0.44); sightF.material = darkMetalMat;
+  // Add trigger and trigger guard
+  const trigger = MeshBuilder.CreateBox('pistol_trigger',{width:0.03, height:0.06, depth:0.02}, scene);
+  trigger.parent = pRoot; trigger.position = new Vector3(-0.05,-0.08,0.08); trigger.material = metalMat;
+  const triggerGuard = MeshBuilder.CreateTorus('pistol_tguard',{diameter:0.12, thickness:0.015, tessellation:16}, scene);
+  triggerGuard.parent = pRoot; triggerGuard.rotation.x = Math.PI/2; triggerGuard.position = new Vector3(-0.05,-0.08,0.08); triggerGuard.material = metalMat;
   weaponModels.pistol = pRoot;
 
   const sRoot = new TransformNode('sniperRoot', scene);
@@ -926,6 +1001,16 @@ function createWeaponModels(){
   scopeMain.parent = sRoot; scopeMain.rotation.x = Math.PI/2; scopeMain.position = new Vector3(0.42,0.12,0.62); const scopeMat = new PBRMaterial('scopeMat', scene); scopeMat.albedoColor = new Color3(0.02,0.02,0.02); scopeMat.metallic=0.95; scopeMat.roughness=0.12; scopeMain.material = scopeMat;
   const scopeEye = MeshBuilder.CreateCylinder('scope_eye',{diameter:0.05, height:0.18, tessellation:12}, scene);
   scopeEye.parent = sRoot; scopeEye.rotation.x = Math.PI/2; scopeEye.position = new Vector3(0.72,0.11,0.87); scopeEye.material = scopeMat;
+  // Add scope mounts and detail
+  const mount1 = MeshBuilder.CreateCylinder('scope_mount1',{diameter:0.04, height:0.08, tessellation:8}, scene);
+  mount1.parent = sRoot; mount1.rotation.x = Math.PI/2; mount1.position = new Vector3(0.28,0.08,0.45); mount1.material = metalMat;
+  const mount2 = MeshBuilder.CreateCylinder('scope_mount2',{diameter:0.04, height:0.08, tessellation:8}, scene);
+  mount2.parent = sRoot; mount2.rotation.x = Math.PI/2; mount2.position = new Vector3(0.58,0.08,0.78); mount2.material = metalMat;
+  // Add bolt handle
+  const boltHandle = MeshBuilder.CreateCylinder('bolt_handle',{diameter:0.015, height:0.12, tessellation:8}, scene);
+  boltHandle.parent = sRoot; boltHandle.rotation.z = Math.PI/2; boltHandle.position = new Vector3(0.24,0.06,0.20); boltHandle.material = metalMat;
+  const boltKnob = MeshBuilder.CreateSphere('bolt_knob',{diameter:0.04, segments:8}, scene);
+  boltKnob.parent = sRoot; boltKnob.position = new Vector3(0.30,0.06,0.20); boltKnob.material = metalMat;
   const bipA = MeshBuilder.CreateCylinder('bipA',{diameter:0.015, height:0.3, tessellation:8}, scene); bipA.parent = sRoot; bipA.rotation.z = 0.5; bipA.position = new Vector3(0.44,-0.08,0.92); bipA.material = metalMat;
   const bipB = MeshBuilder.CreateCylinder('bipB',{diameter:0.015, height:0.3, tessellation:8}, scene); bipB.parent = sRoot; bipB.rotation.z = -0.5; bipB.position = new Vector3(0.44,-0.08,0.72); bipB.material = metalMat;
   weaponModels.sniper = sRoot;
@@ -942,7 +1027,46 @@ function createWeaponModels(){
   }
   const pStock = MeshBuilder.CreateBox('pump_stock',{width:0.34, height:0.12, depth:0.14}, scene);
   pStock.parent = puRoot; pStock.position = new Vector3(-0.18,-0.04,0.12); pStock.material = woodMat;
+  // Add shotgun details
+  const receiver = MeshBuilder.CreateBox('pump_receiver',{width:0.16, height:0.06, depth:0.28}, scene);
+  receiver.parent = puRoot; receiver.position = new Vector3(-0.02,0.01,0.22); receiver.material = darkMetalMat;
+  const loadingPort = MeshBuilder.CreateBox('loading_port',{width:0.08, height:0.03, depth:0.12}, scene);
+  loadingPort.parent = puRoot; loadingPort.position = new Vector3(-0.10,-0.025,0.15); loadingPort.material = metalMat;
+  const ejectionPort = MeshBuilder.CreateBox('ejection_port',{width:0.06, height:0.02, depth:0.08}, scene);
+  ejectionPort.parent = puRoot; ejectionPort.position = new Vector3(0.08,0.035,0.28); ejectionPort.material = metalMat;
+  // Add front and rear sights
+  const frontSight = MeshBuilder.CreateBox('pump_fsight',{width:0.02, height:0.03, depth:0.02}, scene);
+  frontSight.parent = puRoot; frontSight.position = new Vector3(0.75,0.06,0.74); frontSight.material = darkMetalMat;
+  const rearSight = MeshBuilder.CreateBox('pump_rsight',{width:0.03, height:0.025, depth:0.02}, scene);
+  rearSight.parent = puRoot; rearSight.position = new Vector3(0.05,0.055,0.22); rearSight.material = darkMetalMat;
   weaponModels.pump = puRoot;
+
+  // Minigun
+  const mRoot = new TransformNode('minigunRoot', scene);
+  mRoot.parent = weaponRoot;
+  const mainBody = MeshBuilder.CreateBox('minigun_body',{width:0.25, height:0.12, depth:0.50}, scene);
+  mainBody.parent = mRoot; mainBody.position = new Vector3(0.15,0.02,0.35); mainBody.material = darkMetalMat;
+  const motorHousing = MeshBuilder.CreateCylinder('minigun_motor',{diameter:0.20, height:0.25, tessellation:12}, scene);
+  motorHousing.parent = mRoot; motorHousing.rotation.x = Math.PI/2; motorHousing.position = new Vector3(-0.05,0.02,0.20); motorHousing.material = metalMat;
+  // Multiple barrels
+  for(let i=0;i<6;i++){
+    const angle = (i/6) * Math.PI * 2;
+    const radius = 0.08;
+    const barrel = MeshBuilder.CreateCylinder('minigun_barrel',{diameter:0.025, height:1.2, tessellation:12}, scene);
+    barrel.parent = mRoot; barrel.rotation.x = Math.PI/2; 
+    barrel.position = new Vector3(0.65 + Math.cos(angle) * radius, 0.02 + Math.sin(angle) * radius, 0.85);
+    barrel.material = darkMetalMat;
+  }
+  const mGrip = MeshBuilder.CreateBox('minigun_grip',{width:0.08, height:0.20, depth:0.15}, scene);
+  mGrip.parent = mRoot; mGrip.position = new Vector3(-0.15,-0.12,0.10); mGrip.rotation.x = 0.3; mGrip.material = plasticMat;
+  const mTrigger = MeshBuilder.CreateBox('minigun_trigger',{width:0.02, height:0.04, depth:0.02}, scene);
+  mTrigger.parent = mRoot; mTrigger.position = new Vector3(-0.12,-0.08,0.12); mTrigger.material = metalMat;
+  const ammoBox = MeshBuilder.CreateBox('minigun_ammo',{width:0.15, height:0.08, depth:0.20}, scene);
+  ammoBox.parent = mRoot; ammoBox.position = new Vector3(-0.25,-0.06,0.05); ammoBox.material = metalMat;
+  const belt = MeshBuilder.CreateBox('ammo_belt',{width:0.03, height:0.02, depth:0.15}, scene);
+  belt.parent = mRoot; belt.position = new Vector3(-0.08,0.05,0.15); belt.material = new StandardMaterial('beltMat', scene);
+  belt.material.diffuseColor = new Color3(0.8, 0.6, 0.2); // Brass colored
+  weaponModels.minigun = mRoot;
 
   for(const k of Object.keys(weaponModels)) if(weaponModels[k]) weaponModels[k].setEnabled(false);
 }
@@ -1474,24 +1598,80 @@ function spawnBots(count=8){
     const x = (Math.random()* (MAP_SIZE-80)) - (MAP_HALF-40);
     const z = (Math.random()* (MAP_SIZE-80)) - (MAP_HALF-40);
     if(x > -90 && x < -60 && z > -90 && z < -60){ i--; continue; }
-  const root = new Vector3(x,1.0,z);
-  const torso = MeshBuilder.CreateBox(uniqueName('botTorso'), {width:1.2, height:1.4, depth:0.6}, scene);
-  torso.position = new Vector3(x,1.0 + 0.9,z);
-  const head = MeshBuilder.CreateSphere(uniqueName('botHead'), {diameter:0.6, segments:6}, scene);
-  head.position = new Vector3(x,1.9,z);
-  const leftLeg = MeshBuilder.CreateBox(uniqueName('botLeg'), {width:0.3, height:0.9, depth:0.3}, scene);
-  leftLeg.position = new Vector3(x-0.3,0.45,z);
-  const rightLeg = MeshBuilder.CreateBox(uniqueName('botLeg'), {width:0.3, height:0.9, depth:0.3}, scene);
-  rightLeg.position = new Vector3(x+0.3,0.45,z);
-  const leftArm = MeshBuilder.CreateBox(uniqueName('botArm'), {width:0.25, height:0.9, depth:0.25}, scene);
-  leftArm.position = new Vector3(x-0.9,1.2,z);
-  const rightArm = MeshBuilder.CreateBox(uniqueName('botArm'), {width:0.25, height:0.9, depth:0.25}, scene);
-  rightArm.position = new Vector3(x+0.9,1.2,z);
-  const bmat = new StandardMaterial(uniqueName('botMat'), scene);
-  bmat.diffuseColor = pickRandom(botPalette);
-  torso.material = bmat; head.material = bmat; leftLeg.material = bmat; rightLeg.material = bmat; leftArm.material = bmat; rightArm.material = bmat;
-  markSolid(torso); markSolid(head);
-  const bot = {mesh:torso, hp:100, state:'patrol', waypoints:[], wpIndex:0, parts:[torso, head, leftLeg, rightLeg, leftArm, rightArm]};
+    
+    // Create a more human-like bot with separate body parts
+    const botRoot = new TransformNode(uniqueName('botRoot'), scene);
+    botRoot.position = new Vector3(x, 1.0, z);
+    
+    // Body (torso)
+    const torso = MeshBuilder.CreateBox(uniqueName('botTorso'), {width:0.8, height:1.2, depth:0.4}, scene);
+    torso.parent = botRoot;
+    torso.position = new Vector3(0, 0.9, 0);
+    
+    // Head
+    const head = MeshBuilder.CreateSphere(uniqueName('botHead'), {diameter:0.5, segments:8}, scene);
+    head.parent = botRoot;
+    head.position = new Vector3(0, 1.6, 0);
+    
+    // Arms
+    const leftArm = MeshBuilder.CreateBox(uniqueName('botLArm'), {width:0.25, height:0.8, depth:0.25}, scene);
+    leftArm.parent = botRoot;
+    leftArm.position = new Vector3(-0.6, 1.0, 0);
+    
+    const rightArm = MeshBuilder.CreateBox(uniqueName('botRArm'), {width:0.25, height:0.8, depth:0.25}, scene);
+    rightArm.parent = botRoot;
+    rightArm.position = new Vector3(0.6, 1.0, 0);
+    
+    // Legs
+    const leftLeg = MeshBuilder.CreateBox(uniqueName('botLLeg'), {width:0.3, height:0.9, depth:0.3}, scene);
+    leftLeg.parent = botRoot;
+    leftLeg.position = new Vector3(-0.2, 0.1, 0);
+    
+    const rightLeg = MeshBuilder.CreateBox(uniqueName('botRLeg'), {width:0.3, height:0.9, depth:0.3}, scene);
+    rightLeg.parent = botRoot;
+    rightLeg.position = new Vector3(0.2, 0.1, 0);
+    
+    // Add tactical vest
+    const vest = MeshBuilder.CreateBox(uniqueName('bot_vest'), {width:0.9, height:0.8, depth:0.2}, scene);
+    vest.parent = botRoot;
+    vest.position = new Vector3(0, 0.9, 0.15);
+    
+    // Add tactical helmet
+    const helmet = MeshBuilder.CreateSphere(uniqueName('bot_helmet'), {diameter:0.55, segments:8}, scene);
+    helmet.parent = botRoot;
+    helmet.position = new Vector3(0, 1.6, 0);
+    
+    const bmat = new StandardMaterial(uniqueName('botMat'), scene);
+    bmat.diffuseColor = pickRandom(botPalette);
+    
+    const tacticalMat = new StandardMaterial(uniqueName('tacticalMat'), scene);
+    tacticalMat.diffuseColor = new Color3(0.15, 0.25, 0.15); // Dark military green
+    
+    const helmetMat = new StandardMaterial(uniqueName('helmetMat'), scene);
+    helmetMat.diffuseColor = new Color3(0.1, 0.1, 0.1); // Black helmet
+    
+    // Apply materials
+    torso.material = bmat;
+    head.material = bmat;
+    leftArm.material = bmat;
+    rightArm.material = bmat;
+    leftLeg.material = bmat;
+    rightLeg.material = bmat;
+    vest.material = tacticalMat;
+    helmet.material = helmetMat;
+    
+    markSolid(torso);
+    markSolid(head);
+    
+    const bot = {
+      mesh: torso, 
+      hp: 100, 
+      state: 'patrol', 
+      waypoints: [], 
+      wpIndex: 0, 
+      parts: [torso, head, leftLeg, rightLeg, leftArm, rightArm, vest, helmet, botRoot]
+    };
+    
     for(let w=0;w<4;w++){
       if(buildingsList.length > 0 && Math.random() < 0.25){
         const b = pickRandom(buildingsList);
@@ -1506,50 +1686,9 @@ function spawnBots(count=8){
   }
 }
 
-spawnBots(4);
+spawnBots(25); // Increased from 4 to 25 for more action
 
-function generateCoverAndPlatforms(){
-  const covers = [];
-  const coverCount = 12;
-  for(let i=0;i<coverCount;i++){
-    const w = 2 + Math.random()*4;
-    const d = 2 + Math.random()*4;
-    const x = (Math.random()*160)-80;
-    const z = (Math.random()*160)-80;
-    if(x < -90 && z < -90) { i--; continue; }
-  const box = MeshBuilder.CreateBox(uniqueName('cover'),{width:w*1.2, depth:d*1.2, height:2.2}, scene);
-  box.position = new Vector3(x,1.1,z);
-  const cmat = new StandardMaterial(uniqueName('coverMat'), scene);
-  cmat.diffuseColor = pickRandom(coverPalette);
-  cmat.specularColor = new Color3(0.03,0.03,0.03);
-  box.material = cmat;
-  markSolid(box);
-  box.metadata.climbable = true;
-    covers.push(box);
-  }
-
-  const platCount = 2 + Math.floor(Math.random()*2);
-  for(let p=0;p<platCount;p++){
-    const px = (Math.random()*120)-60;
-    const pz = (Math.random()*120)-60;
-  const platform = MeshBuilder.CreateBox('plat'+p,{width:14, depth:14, height:2.4}, scene);
-  platform.position = new Vector3(px,2.7,pz);
-    const pmat = new StandardMaterial(uniqueName('platMat'), scene);
-    pmat.diffuseColor = pickRandom(coverPalette);
-    platform.material = pmat;
-  markSolid(platform);
-  platform.metadata.climbable = true;
-  const ramp = MeshBuilder.CreateBox(uniqueName('rampSmall'),{width:7, depth:7, height:1.2}, scene);
-  ramp.position = new Vector3(px-7,1.6,pz);
-  ramp.rotation.x = -0.33;
-  const rmat = new StandardMaterial(uniqueName('rmatSmall'), scene);
-  rmat.diffuseColor = pickRandom(rampPalette);
-  ramp.material = rmat;
-  markSolid(ramp);
-  }
-}
-
-generateCoverAndPlatforms();
+// generateCoverAndPlatforms(); // Removed floating platforms
 
 function createAdditionalBuildings(){
   createBuilding(-40, -160, 28, 20, 7);
